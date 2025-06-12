@@ -6,7 +6,7 @@
     <title>Sifferpyramid Pussel</title>
     <style>
         body {
-            font-family: 'Courier New', monospace;
+            font-family: Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -15,26 +15,27 @@
             margin: 0;
             padding: 20px;
         }
-        
+
         .puzzle-container {
             background: white;
             padding: 40px;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             text-align: center;
+            max-width: 600px;
         }
-        
+
         .pyramid {
             display: inline-block;
             margin: 20px 0;
         }
-        
+
         .row {
             display: flex;
             justify-content: center;
             margin: 10px 0;
         }
-        
+
         .cell {
             width: 50px;
             height: 50px;
@@ -47,30 +48,30 @@
             border-radius: 10px;
             transition: all 0.3s ease;
         }
-        
+
         .known {
             background: #4CAF50;
             color: white;
             border: 3px solid #45a049;
         }
-        
+
         .unknown {
             background: #f0f0f0;
             color: #666;
             border: 3px dashed #ccc;
         }
-        
+
         .solution {
             background: #2196F3;
             color: white;
             border: 3px solid #1976D2;
         }
-        
+
         h1 {
             color: #333;
             margin-bottom: 10px;
         }
-        
+
         .rules {
             background: #f8f9fa;
             padding: 20px;
@@ -78,17 +79,18 @@
             margin: 20px 0;
             text-align: left;
         }
-        
+
         .rules h3 {
             color: #495057;
             margin-top: 0;
         }
-        
+
         .rules ul {
-            color: #6c757d;
+            color: #333;
+            font-size: 16px;
             line-height: 1.6;
         }
-        
+
         .toggle-btn {
             background: #FF9800;
             color: white;
@@ -97,14 +99,14 @@
             border-radius: 25px;
             font-size: 16px;
             cursor: pointer;
-            margin: 20px 0;
+            margin: 10px;
             transition: background 0.3s ease;
         }
-        
+
         .toggle-btn:hover {
             background: #F57C00;
         }
-        
+
         .hidden {
             display: none;
         }
@@ -112,18 +114,20 @@
 </head>
 <body>
     <div class="puzzle-container">
-        <h1>🔢 Sifferpyramid Pussel</h1>
-        
-        <div class="rules">
+        <h1>🔢 Sigrid och Johans Sifferpyramid</h1>
+
+        <div class="rules" id="rules">
             <h3>📋 Regler:</h3>
-            <ul>
-                <li>Varje siffra är <strong>summan</strong> av de två siffrorna under den</li>
-                <li>Fyll i alla <span style="color: #666;">grå rutor</span></li>
-                <li>Använd bara <strong>positiva heltal</strong></li>
-                <li><span style="color: #4CAF50;">Gröna rutor</span> = kända siffror</li>
+            <ul id="rules-text">
+                <li>Varje ruta är <strong>summan</strong> av de två rutorna under den.</li>
+                <li>Fyll i alla <span style="color: #666;">grå rutor</span>.</li>
+                <li>Använd bara <strong>positiva heltal</strong>.</li>
+                <li><span style="color: #4CAF50;">Gröna rutor</span> = redan givna siffror.</li>
             </ul>
         </div>
-        
+
+        <button class="toggle-btn" onclick="toggleTranslation()">🌐 Översätt till danska</button>
+
         <div class="pyramid" id="puzzle">
             <div class="row">
                 <div class="cell unknown">?</div>
@@ -144,8 +148,7 @@
                 <div class="cell known">2</div>
             </div>
         </div>
-     
-        
+
         <div class="pyramid hidden" id="solution">
             <div class="row">
                 <div class="cell solution">39</div>
@@ -166,41 +169,56 @@
                 <div class="cell known">2</div>
             </div>
         </div>
-        
-        <div class="rules" id="explanation" style="display: none;">
+
+        <div class="rules hidden" id="explanation">
             <h3>🔍 Lösning steg för steg:</h3>
             <ul>
-                <li><strong>Steg 1:</strong> 1 + 2 = 3 ✓ (redan känt)</li>
-                <li><strong>Steg 2:</strong> 2 + 4 = 6... nej vänta, vi har 5 där</li>
-                <li><strong>Steg 3:</strong> 4 + 3 = 7 ✓ (redan känt)</li>
-                <li><strong>Steg 4:</strong> 3 + 5 = 8 ✓ (redan känt)</li>
-                <li><strong>Steg 5:</strong> 5 + 7 = 12... nej, vi har 10</li>
+                <li><strong>Steg 1:</strong> 1 + 2 = 3 ✓</li>
+                <li><strong>Steg 2:</strong> 2 + 4 = 6... nej, fel</li>
+                <li><strong>Steg 3:</strong> 4 + 3 = 7 ✓</li>
+                <li><strong>Steg 4:</strong> 3 + 5 = 8 ✓</li>
+                <li><strong>Steg 5:</strong> 5 + 7 = 12... nej, fel</li>
                 <li><strong>Steg 6:</strong> 8 + 10 = 18</li>
             </ul>
         </div>
     </div>
-    
+
     <script>
         let showingSolution = false;
-        
+        let danish = false;
+
         function toggleSolution() {
             const puzzle = document.getElementById('puzzle');
             const solution = document.getElementById('solution');
-            const btnText = document.getElementById('btn-text');
             const explanation = document.getElementById('explanation');
-            
-            if (showingSolution) {
-                puzzle.classList.remove('hidden');
-                solution.classList.add('hidden');
-                explanation.style.display = 'none';
-                btnText.textContent = '👁️ Visa lösning';
-                showingSolution = false;
+            const btnText = document.getElementById('btn-text');
+
+            showingSolution = !showingSolution;
+            puzzle.classList.toggle('hidden', showingSolution);
+            solution.classList.toggle('hidden', !showingSolution);
+            explanation.classList.toggle('hidden', !showingSolution);
+            btnText.textContent = showingSolution ? '🔒 Dölj lösning' : '👁️ Visa lösning';
+        }
+
+        function toggleTranslation() {
+            const rulesText = document.getElementById('rules-text');
+
+            if (!danish) {
+                rulesText.innerHTML = `
+                    <li>Hver boks er <strong>summen</strong> af de to bokse nedenunder.</li>
+                    <li>Udfyld alle <span style="color: #666;">grå bokse</span>.</li>
+                    <li>Brug kun <strong>positive heltal</strong>.</li>
+                    <li><span style="color: #4CAF50;">Grønne bokse</span> = kendte tal.</li>
+                `;
+                danish = true;
             } else {
-                puzzle.classList.add('hidden');
-                solution.classList.remove('hidden');
-                explanation.style.display = 'block';
-                btnText.textContent = '🔒 Dölj lösning';
-                showingSolution = true;
+                rulesText.innerHTML = `
+                    <li>Varje ruta är <strong>summan</strong> av de två rutorna under den.</li>
+                    <li>Fyll i alla <span style="color: #666;">grå rutor</span>.</li>
+                    <li>Använd bara <strong>positiva heltal</strong>.</li>
+                    <li><span style="color: #4CAF50;">Gröna rutor</span> = redan givna siffror.</li>
+                `;
+                danish = false;
             }
         }
     </script>
